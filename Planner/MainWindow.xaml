@@ -1,0 +1,601 @@
+﻿<Window x:Class="Planner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Planner"
+        mc:Ignorable="d"
+        Title="Ежедневник" Height="600" Width="800"
+        ResizeMode="NoResize"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        x:Name="mainWindow">
+
+    <Grid>
+        <Grid Background="Black">
+
+            <Grid x:Name="BG" 
+                  PreviewMouseLeftButtonDown="BG_PreviewMouseLeftButtonDown">
+                <Grid.Background>
+                    <ImageBrush  x:Name="img_bg"
+                                 ImageSource="Badges/img_background.jpg"
+                                 Stretch="Fill"></ImageBrush>
+                </Grid.Background>
+                <Grid Style="{StaticResource InnerG_Style}">
+                    <Grid x:Name="Planner_Grid" Visibility="Collapsed" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="50"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TreeView x:Name="Plan_TV" HorizontalAlignment="Stretch" 
+                                  Margin="15,30,15,15"  VerticalAlignment="Stretch" 
+                                  Grid.Column="0" 
+                                  SelectedItemChanged="Plan_TV_SelectedItemChanged" 
+                                  MouseDoubleClick="Plan_TV_MouseDoubleClick" 
+                                  KeyDown="Plan_TV_KeyDown" 
+                                  MouseDown="Plan_TV_MouseDown"
+                                  KeyUp="Plan_TV_KeyUp" 
+                                  ItemsSource="{Binding Path=MainWindow}"
+                                  >
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate 
+                                    ItemsSource="{Binding Path=Children}">
+                                    <Grid Width="300">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Title}" 
+                                                   Visibility="{Binding Seeing_TBlock}">
+                                            </TextBlock>
+                                            <TextBox x:Name="Plan_Title" 
+                                                 Text="{Binding Title, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}" 
+                                                 Visibility="{Binding Seeing_TBox, 
+                                            Mode=TwoWay}" 
+                                                 MouseEnter="Plan_Title_MouseEnter">
+                                            </TextBox>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" 
+                                                    Width="58" Height="20" 
+                                                    HorizontalAlignment="Right">
+                                            <TextBlock x:Name="Status_TBlock"
+                                                   TextWrapping="Wrap" 
+                                               HorizontalAlignment="Right"
+                                                   Text="{Binding TaskStatus}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsSelected" 
+                                            Value="{Binding IsSelected, Mode=TwoWay}" />
+                                    <Setter Property="IsExpanded" 
+                                            Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+                        </TreeView>
+                        <TextBlock x:Name="Plan_TBlock" Style="{StaticResource Font_TB_Style}" Text="Plan" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top" />
+
+                        <Grid Grid.Column="1" HorizontalAlignment="Stretch" Margin="15,30,15,15"  VerticalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*">
+                                </ColumnDefinition>
+                                <ColumnDefinition Width="3*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition Height="3*"></RowDefinition>
+                                <RowDefinition Height="3*"></RowDefinition>
+                                <RowDefinition Height="2*"></RowDefinition>
+                                <RowDefinition Height="0"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <TextBlock x:Name="Target_TBlock" Style="{StaticResource Font_TB_Style}" 
+                                       Text="Target" Margin="0,0,15,0" Grid.Column="0"/>
+                            <TextBox x:Name="TargetTB"  TextWrapping="Wrap" 
+                                     Text="{Binding ElementName=mainWindow, 
+                                Path=SelectedPlanner.Target, Mode=TwoWay}"
+                                     VerticalAlignment="Stretch" 
+                                     HorizontalAlignment="Stretch" Grid.Row="0" 
+                                     Grid.Column="1" KeyDown="Target_TB_KeyDown" />
+                            <TextBlock x:Name="Deadlines_TBlock" Style="{StaticResource Font_TB_Style}" 
+                                       TextWrapping="Wrap" TextAlignment="Center" 
+                                       Text="Deadline" HorizontalAlignment="Left"  
+                               Grid.Row="1" VerticalAlignment="Top" Height="37" Margin="0,0.4,0,0"/>
+                            <DatePicker x:Name="Deadlines_DP" 
+                                        BorderThickness="0" 
+                                        HorizontalAlignment="Left" 
+                                        VerticalAlignment="Center" 
+                                        Grid.Column="1" Grid.Row="1"
+                                        Text="{Binding ElementName=mainWindow,
+                                Path=SelectedPlanner.EndDate, Mode=TwoWay}" 
+                                        KeyDown="Deadlines_DP_KeyDown"/>
+                            <TextBlock x:Name="TaskStatus_TB" Text="Common status:"
+                                       Grid.Column="1" Grid.Row="1"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Margin="104.2,13.6,0,13.8"
+                                       Style="{StaticResource Font_TB_Style}">
+
+                            </TextBlock>
+                            <TextBlock x:Name="TaskStatus_Value_TB" Text="{Binding 
+                                ElementName=mainWindow, 
+                                Path=SelectedPlanner.CommonStatus}"
+                                       Grid.Column="1" Grid.Row="1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Margin="0,13.6,17.4,13.8"
+                                       Style="{StaticResource Font_TB_Style}" 
+                                       Width="28">
+
+                            </TextBlock>
+                            <TextBlock x:Name="Description_TBlock" Style="{StaticResource Font_TB_Style}" 
+                                       Text="Description" Grid.Column="0" 
+                                       Grid.ColumnSpan="2" 
+                                       HorizontalAlignment="Center" 
+                                       Grid.Row="2" VerticalAlignment="Top"/>
+
+                            <TextBox x:Name="DescriptionTB" 
+                                     HorizontalAlignment="Stretch" Grid.Row="2" 
+                                 VerticalAlignment="Stretch" 
+                                     Grid.ColumnSpan="2" 
+                                     Margin="0,25,0,0"
+                                 TextWrapping="Wrap" Text="{Binding 
+                                ElementName=mainWindow, 
+                                Path=SelectedPlanner.Description,Mode=TwoWay}" 
+                                     KeyDown="Target_TB_KeyDown">
+                            </TextBox>
+                            <TextBlock x:Name="Methods_TBlock" Style="{StaticResource Font_TB_Style}" 
+                                       Text="Methods of achieving the goal" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Top"/>
+                            <TextBox x:Name="MethodsTB" 
+                                     HorizontalAlignment="Stretch" 
+                                     Grid.Row="3" VerticalAlignment="Stretch" 
+                                     Grid.ColumnSpan="2" Margin="0,25,0,0"
+                                     Text="{Binding ElementName=mainWindow, 
+                                Path=SelectedPlanner.Methods,Mode=TwoWay}" KeyDown="Target_TB_KeyDown">
+                            </TextBox>
+                            <TextBlock x:Name="Facilities_TBlock" Style="{StaticResource Font_TB_Style}" 
+                                       Text="Facilities" Grid.Column="0" Grid.ColumnSpan="2" 
+                               HorizontalAlignment="Center" Grid.Row="4" VerticalAlignment="Top"/>
+                            <TextBox x:Name="FacilitiesTB" HorizontalAlignment="Stretch" Margin="0,25,0,0" 
+                                 Grid.Row="4" Grid.Column="0" 
+                                     VerticalAlignment="Stretch" 
+                                     Grid.ColumnSpan="2"
+                                     Text="{Binding ElementName=mainWindow, 
+                                Path=SelectedPlanner.Facilities, Mode=TwoWay}" KeyDown="Target_TB_KeyDown">
+                            </TextBox>
+                        </Grid>
+                        <Button x:Name="Add_Plan" Grid.ColumnSpan="2" 
+                                Content="Add" HorizontalAlignment="Left" 
+                                Margin="300,15.6,0,0" Grid.Row="1" 
+                                VerticalAlignment="Top" Width="75" Click="Add_Plan_Click"/>
+                        <Button x:Name="Remove_Plan" Content="Remove" 
+                                Grid.Column="1" HorizontalAlignment="Left" 
+                                Margin="31.2,15.6,0,0" Grid.Row="1" 
+                                VerticalAlignment="Top" Width="75" Click="Remove_Plan_Click"/>
+
+
+                    </Grid>
+
+                    <Grid x:Name="To_do_list_Grid" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="50"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="Queue_TBlock" 
+                                   Style="{StaticResource Font_TB_Style}" 
+                                   Text="Task List"/>
+                        <TreeView x:Name="Queue_TV" Grid.RowSpan="2" 
+                                  Style="{StaticResource TV_Style}" 
+                                  SelectedItemChanged="Queue_TV_SelectedItemChanged"
+                                  MouseDown="InProgress_TV_MouseDown">
+                        </TreeView>
+                        <TextBlock Text="In Progress" Style="{StaticResource Font_TB_Style}"
+                                   Grid.Column="1"></TextBlock>
+                        <TreeView x:Name="InProgress_TV" Grid.Column="1" 
+                                  Style="{StaticResource TV_Style}" 
+                                  SelectedItemChanged="Executable_TV_SelectedItemChanged" 
+                                  MouseDown="InProgress_TV_MouseDown">
+                        </TreeView>
+                        <TextBlock Text="Waiting" Style="{StaticResource Font_TB_Style}"
+                                   Grid.Column="1" Grid.Row="1"></TextBlock>
+                        <TreeView x:Name="Waiting_TV" Grid.Column="1" Grid.Row="1" 
+                                  Style="{StaticResource TV_Style}" 
+                                  SelectedItemChanged="Pending_TV_SelectedItemChanged"
+                                  MouseDown="InProgress_TV_MouseDown">
+                        </TreeView>
+
+                        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Background="AliceBlue">
+                            <Button x:Name="Add_Executable_But" 
+                                    Content="Add to executables" 
+                                    Click="Add_Executable_But_Click" Margin="0,0,0,-0.4" Width="206" ></Button>
+                            <Button x:Name="Add_Waiting_But" 
+                                    Content="Add to pending" 
+                                    Click="Add_Waiting_But_Click" Margin="0,0,0,-0.4" Width="195"></Button>
+                            <Button x:Name="Add_Perfomed_But" 
+                                    Content="Add to completed" 
+                                    Width="206" Margin="0,0,0,-0.4" 
+                                    Click="Add_Perfomed_But_Click"/>
+                            <Button x:Name="Remove_Task_But" Content="Take away" 
+                                    Width="75" Click="Remove_Task_But_Click" Margin="0,0,0,-0.4" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid x:Name="Diary_Grid" Visibility="Collapsed">
+                        <RichTextBox x:Name="Records_RTB" HorizontalAlignment="Stretch" 
+                                 Margin="206,40,39.6,50" 
+                                 VerticalAlignment="Stretch" 
+                                     SelectionChanged="Records_RTB_SelectionChanged" 
+                                     KeyDown="Records_RTB_KeyDown">
+                        </RichTextBox>
+
+                        <TreeView x:Name="Table_TV" HorizontalAlignment="Stretch" 
+                              Margin="13,40,546.6,50" 
+                             VerticalAlignment="Stretch" 
+                              SelectedItemChanged="TableTV_SelectionChanged" 
+                                  MouseDoubleClick="Table_LV_MouseDoubleClick" 
+                                  KeyUp="Table_LV_KeyUp" 
+                                  MouseDown="Table_LV_MouseDown" 
+                                  KeyDown="Table_TV_KeyDown">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}" 
+                                                   Visibility="{Binding Seeing_TBlock}">
+                                        </TextBlock>
+
+                                        <TextBox x:Name="Plan_Title" 
+                                                 Text="{Binding Title, Mode=TwoWay,
+                                                UpdateSourceTrigger=PropertyChanged}" 
+                                                 Visibility="{Binding Seeing_TBox, 
+                                            Mode=TwoWay}" 
+                                                 MouseEnter="Plan_Title_MouseEnter">
+                                        </TextBox>
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+                        </TreeView>
+
+                        <Button x:Name="AddRecord_But" Content="Add record" 
+                             Margin="0,0,59.6,10"
+                            Padding="5"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom" Click="AddRecord_But_Click"/>
+                        <Button x:Name="RemoveRecord_But" 
+                            Content="Remove record" 
+                            HorizontalAlignment="Center" 
+                            Margin="458,0,177.6,10" 
+                            VerticalAlignment="Bottom" 
+                            Padding="5" Click="RemoveRecord_But_Click" Width="102"/>
+
+                    </Grid>
+
+                    <Grid x:Name="Ideas_Notes_Grid"></Grid>
+
+                    <Grid x:Name="Statistics_Grid" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.7*"></ColumnDefinition>
+                            <ColumnDefinition Width="0.3*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="Perfomed_TBlock" Text="Completed"
+                               Style="{StaticResource Font_TB_Style}"
+                               Grid.Column="3"/>
+                        <TreeView x:Name="Perfomed_TV" 
+                                  Style="{StaticResource TV_Style}" 
+                                  SelectedItemChanged="Executable_TV_SelectedItemChanged" 
+                                  MouseDown="InProgress_TV_MouseDown"
+                                  Grid.Column="3">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Path=Children}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}" 
+                                          ></TextBlock>
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                        <TextBlock x:Name="PerfomedCount_TBlock" 
+                                   Style="{StaticResource Statistics_Style}" 
+                                   HorizontalAlignment="Left"
+                                   Text="Quality completed:" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="CountPerfomed" 
+                                   Style="{StaticResource Statistics_Style}" 
+                                   HorizontalAlignment="Left"
+                                   Text="{Binding ElementName=Perfomed_TV, 
+                            Path=Items.Count,
+                            UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="45"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Button x:Name="Close_But"
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Height="40"
+                        Width="40"
+                        BorderThickness="0"
+                        Style="{StaticResource close_but}" Click="Close_But_Click">
+                    <Button.Background>
+                        <ImageBrush ImageSource="Badges/Power-off-button-100.png"></ImageBrush>
+                    </Button.Background>
+                </Button>
+            </Grid>
+
+
+
+            <Grid x:Name="nav_pan"
+                  HorizontalAlignment="Left"
+                  Width="65"
+                  Background="#FFA890FE">
+                <StackPanel x:Name="st_pan">
+                    <Grid Height="90">
+                        <TextBlock 
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="73,-20,0,0"
+                            Text="M E N U"
+                            Foreground="#FF741CCA"
+                            FontSize="22"
+                            Background="Transparent"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource font_style}">
+
+                            <TextBlock.Effect>
+                                <DropShadowEffect BlurRadius="10"
+                                              ShadowDepth="1"
+                                              Direction="-90"
+                                              Color="White"></DropShadowEffect>
+                            </TextBlock.Effect>
+                        </TextBlock>
+
+                        <ToggleButton x:Name="tg_but"
+                                      Grid.Column="0"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Left"
+                                      Margin="18,-20,0,0"
+                                      Height="30"
+                                      Width="30"
+                                      BorderThickness="0"
+                                      Style="{StaticResource tb_style}" Unchecked="Tg_but_Unchecked" Checked="Tg_but_Checked">
+                            <ToggleButton.Background>
+                                <ImageBrush ImageSource="Badges/tgBut_Default.png">
+
+                                </ImageBrush>
+                            </ToggleButton.Background>
+                            <ToggleButton.Triggers>
+                                <EventTrigger RoutedEvent="ToggleButton.Unchecked">
+                                    <BeginStoryboard>
+                                        <Storyboard x:Name="HideStackPanel">
+
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="nav_pan"
+                                                Storyboard.TargetProperty="Width"
+                                                BeginTime="0:0:0"
+                                                From="230" To="65"
+                                                Duration="0:0:0:2">
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="ToggleButton.Checked">
+                                    <BeginStoryboard>
+                                        <Storyboard x:Name="ShowStackPanel">
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="nav_pan"
+                                                Storyboard.TargetProperty="Width"
+                                                BeginTime="0:0:0"
+                                                From="65" To="230"
+                                                Duration="0:0:0.3"></DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </ToggleButton.Triggers>
+                        </ToggleButton>
+                    </Grid>
+
+                    <ListView x:Name="LV"
+                              Background="#FF7219CD"
+                              BorderBrush="Transparent"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+
+
+                        <ListViewItem HorizontalAlignment="Left"
+                                      Margin="0,0,0,15" x:Name="Planner_LVI"
+                                      MouseEnter="ListViewItem_MouseEnter">
+                            <StackPanel x:Name="Plan_SP" 
+                                        Orientation="Horizontal"
+                                        Width="230"
+                                        MouseDown="StackPanel_MouseDown">
+                                <Image Source="Badges/Planner.png"
+                                       Stretch="Fill"
+                                       Margin="12,0,0,0"
+                                       Width="30"
+                                       Height="30">
+
+                                </Image>
+                                <TextBlock Text="Planner"
+                                           Margin="25,0,0,0"
+                                           Style="{StaticResource font_style}">
+
+                                </TextBlock>
+                            </StackPanel>
+                            <ListViewItem.ToolTip>
+                                <ToolTip x:Name="tt_planner"
+                                         Content="Planner"
+                                         Style="{StaticResource tt_style}"></ToolTip>
+                            </ListViewItem.ToolTip>
+                        </ListViewItem>
+
+                        <ListViewItem HorizontalAlignment="Left"
+                                      Margin="0,0,0,15" x:Name="To_do_list_LVI"
+                                      MouseEnter="ListViewItem_MouseEnter">
+                            <StackPanel x:Name="To_do_list_SP" Orientation="Horizontal"
+                                        Width="230" MouseDown="StackPanel_MouseDown">
+                                <Image Source="Badges/List-64.png"
+                                       Stretch="Fill"
+                                       Margin="12,0,0,0"
+                                       Width="30"
+                                       Height="30"/>
+                                <TextBlock Text="To-do list"
+                                           Margin="25,0,0,0"
+                                           Style="{StaticResource font_style}">
+
+                                </TextBlock>
+                            </StackPanel>
+                            <ListViewItem.ToolTip>
+                                <ToolTip x:Name="tt_to_do_list"
+                                         Content="To-do list"
+                                         Style="{StaticResource tt_style}"></ToolTip>
+                            </ListViewItem.ToolTip>
+                        </ListViewItem>
+
+                        <ListViewItem HorizontalAlignment="Left"
+                                      Margin="0,0,0,15" MouseEnter="ListViewItem_MouseEnter">
+                            <StackPanel x:Name="Diary_SP" Orientation="Horizontal"
+                                        Width="230" MouseDown="StackPanel_MouseDown">
+                                <Image Source="Badges/Diary.png"
+                                       Stretch="Fill"
+                                       Margin="12,0,0,0"
+                                       Width="30"
+                                       Height="30">
+
+                                </Image>
+                                <TextBlock Text="Diary"
+                                           Margin="25,0,0,0"
+                                           Style="{StaticResource font_style}">
+
+                                </TextBlock>
+                            </StackPanel>
+                            <ListViewItem.ToolTip>
+                                <ToolTip x:Name="tt_diary"
+                                         Content="Diary"
+                                         Style="{StaticResource tt_style}">
+                                </ToolTip>
+                            </ListViewItem.ToolTip>
+                        </ListViewItem>
+
+                        <ListViewItem HorizontalAlignment="Left"
+                                      Margin="0,0,0,15" MouseEnter="ListViewItem_MouseEnter">
+                            <StackPanel x:Name="Ideas_Notes_SP" Orientation="Horizontal"
+                                        Width="230" MouseDown="StackPanel_MouseDown">
+                                <Image Source="Badges/Spiral-bound-booklet-64.png"
+                                       Stretch="Fill"
+                                       Margin="12,0,0,0"
+                                       Width="30"
+                                       Height="30">
+
+                                </Image>
+                                <TextBlock Text="Ideas and Notes"
+                                           Margin="25,0,0,0"
+                                           Style="{StaticResource font_style}">
+
+                                </TextBlock>
+                            </StackPanel>
+                            <ListViewItem.ToolTip>
+                                <ToolTip x:Name="tt_Ideas_Notes"
+                                         Content="Ideas and Notes"
+                                         Style="{StaticResource tt_style}"></ToolTip>
+                            </ListViewItem.ToolTip>
+                        </ListViewItem>
+
+
+
+                        <ListViewItem HorizontalAlignment="Left"
+                                      Margin="0,0,0,15" MouseEnter="ListViewItem_MouseEnter">
+                            <StackPanel x:Name="Statistics_SP" Orientation="Horizontal"
+                                        Width="230" MouseDown="StackPanel_MouseDown">
+                                <Image Source="Badges/Statistics.png"
+                                       Stretch="Fill"
+                                       Margin="12,0,0,0"
+                                       Width="30"
+                                       Height="30">
+
+                                </Image>
+                                <TextBlock Text="Statistics"
+                                           Margin="25,0,0,0"
+                                           Style="{StaticResource font_style}">
+
+                                </TextBlock>
+                            </StackPanel>
+                            <ListViewItem.ToolTip>
+                                <ToolTip x:Name="tt_statistics"
+                                         Content="Statistics"
+                                         Style="{StaticResource tt_style}"></ToolTip>
+                            </ListViewItem.ToolTip>
+                        </ListViewItem>
+
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                            <Border x:Name="Bd"
+                                                    Height="50"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}"
+                                                    Padding="{TemplateBinding Padding}"
+                                                    SnapsToDevicePixels="True">
+
+                                                <ContentPresenter HorizontalAlignment="{TemplateBinding  HorizontalContentAlignment}"
+                                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+
+                                                </ContentPresenter>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="IsMouseOver" Value="True"></Condition>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter Property="Background"
+                                                            TargetName="Bd"
+                                                            Value="Red"></Setter>
+                                                    <Setter Property="BorderBrush"
+                                                            TargetName="Bd"
+                                                            Value="Green"></Setter>
+                                                </MultiTrigger>
+
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </StackPanel>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
